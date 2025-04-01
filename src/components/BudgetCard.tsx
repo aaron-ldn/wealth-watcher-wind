@@ -1,43 +1,59 @@
 
 import React from 'react';
+import { Card, CardContent } from "@/components/ui/card";
 import { Progress } from "@/components/ui/progress";
 
-type BudgetCardProps = {
+interface BudgetCardProps {
   category: string;
   spent: number;
   limit: number;
   color: string;
   icon: React.ReactNode;
-};
+  currencySymbol?: string;
+}
 
-const BudgetCard: React.FC<BudgetCardProps> = ({ category, spent, limit, color, icon }) => {
-  const percentage = (spent / limit) * 100;
-  const isOverBudget = percentage > 100;
+const BudgetCard: React.FC<BudgetCardProps> = ({
+  category,
+  spent,
+  limit,
+  color,
+  icon,
+  currencySymbol = "$"
+}) => {
+  const percentage = limit > 0 ? Math.min(Math.round((spent / limit) * 100), 100) : 0;
+  const isOverBudget = spent > limit && limit > 0;
   
   return (
-    <div className="bg-white dark:bg-gray-800 p-4 rounded-lg shadow-sm">
-      <div className="flex items-center mb-3">
-        <div className={`p-2 rounded-full ${color} mr-3`}>
-          {icon}
+    <Card>
+      <CardContent className="p-6">
+        <div className="flex items-center justify-between mb-4">
+          <div className="flex items-center gap-3">
+            <div className={`p-2 rounded-full ${color}`}>
+              {icon}
+            </div>
+            <h3 className="text-lg font-medium">{category}</h3>
+          </div>
+          <span className="text-sm text-muted-foreground">{percentage}%</span>
         </div>
-        <h3 className="font-medium">{category}</h3>
-      </div>
-      
-      <div className="flex justify-between text-sm mb-2">
-        <span>${spent.toFixed(2)}</span>
-        <span className={isOverBudget ? 'text-red-500' : ''}>${limit.toFixed(2)}</span>
-      </div>
-      
-      <Progress
-        value={percentage > 100 ? 100 : percentage}
-        className={`h-2 ${isOverBudget ? 'bg-red-200' : 'bg-gray-200'}`}
-        indicatorClassName={isOverBudget ? 'bg-red-500' : undefined}
-      />
-      
-      {isOverBudget && (
-        <p className="text-xs text-red-500 mt-2">Over budget by ${(spent - limit).toFixed(2)}</p>
-      )}
-    </div>
+        
+        <Progress 
+          value={percentage} 
+          className="h-2 mb-2" 
+          // Use a CSS class for the indicator color
+          className={isOverBudget ? "h-2 mb-2 [&>div]:bg-red-500" : "h-2 mb-2"}
+        />
+        
+        <div className="flex justify-between items-center">
+          <p className="text-sm text-muted-foreground">Spent</p>
+          <p className="text-sm font-medium">{currencySymbol}{spent.toFixed(2)}</p>
+        </div>
+        
+        <div className="flex justify-between items-center">
+          <p className="text-sm text-muted-foreground">Limit</p>
+          <p className="text-sm font-medium">{currencySymbol}{limit.toFixed(2)}</p>
+        </div>
+      </CardContent>
+    </Card>
   );
 };
 
